@@ -68,7 +68,7 @@ action :before_restart do
   case node['platform']
   when "smartos"
     app_path      = ::File.join(new_resource.path, 'current')
-    unicorn_path  = "/home/#{new_resource.owner}/.rbenv/shims:/home/#{new_resource.owner}/.rbenv/bin:/opt/local/bin:/opt/local/sbin:/usr/bin:/usr/sbin"
+    unicorn_path  = "/opt/local/bin:/opt/local/sbin:/usr/bin:/usr/sbin"
 
     smf "unicorn-#{new_resource.name}" do
       credentials_user new_resource.owner
