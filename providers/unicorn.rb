@@ -31,7 +31,14 @@ action :before_compile do
     include_recipe "unicorn"
   end
 
-  new_resource.restart_command "/etc/init.d/#{new_resource.name} hup" if !new_resource.restart_command
+  if !new_resource.restart_command
+    case node['platform']
+    when "smartos"
+      new_resource.restart_command "svcadm restart unicorn-#{new_resource.name}"
+    else
+      new_resource.restart_command "/etc/init.d/#{new_resource.name} hup"
+    end
+  end
 
 end
 
@@ -55,20 +62,56 @@ action :before_restart do
     preload_app new_resource.preload_app
     worker_processes new_resource.worker_processes
     before_fork new_resource.before_fork
+    after_fork new_resource.after_fork
   end
 
-  runit_service new_resource.name do
-    template_name 'unicorn'
-    owner new_resource.owner if new_resource.owner 
-    group new_resource.group if new_resource.group
+  case node['platform']
+  when "smartos"
+    app_path      = ::File.join(new_resource.path, 'current')
+    unicorn_path  = "/home/#{new_resource.owner}/.rbenv/shims:/home/#{new_resource.owner}/.rbenv/bin:/opt/local/bin:/opt/local/sbin:/usr/bin:/usr/sbin"
 
-    cookbook 'application_ruby'
-    options(
-      :app => new_resource,
-      :rails_env => new_resource.environment_name,
-      :smells_like_rack => ::File.exists?(::File.join(new_resource.path, "current", "config.ru"))
-    )
-    run_restart false
+    smf "unicorn-#{new_resource.name}" do
+      credentials_user new_resource.owner
+
+      start_command "bundle exec unicorn -c /etc/unicorn/#{new_resource.name}.rb -E %{config/rails_env} -D"
+      start_timeout 90
+      stop_command ":kill"
+      stop_timeout 30
+      restart_command ":kill -SIGUSR2"
+      restart_timeout 120
+      environment(
+        "HOME" => "/home/#{new_resource.owner}",
+        "PATH" => unicorn_path
+      )
+
+      # If you get into a case where the unicorn master is frequently reaping
+      # workers, SMF may notice and put the service into maintenance mode.
+      # Instead, we tell SMF to ignore core dumps and signals to children.
+      ignore ["core","signal"]
+
+      property_groups({
+        "config" => {
+          "rails_env" => new_resource.environment_name
+        }
+      })
+
+      working_directory app_path
+      action :install
+    end
+  else
+    runit_service new_resource.name do
+      template_name 'unicorn'
+      owner new_resource.owner if new_resource.owner 
+      group new_resource.group if new_resource.group
+
+      cookbook 'application_ruby'
+      options(
+        :app => new_resource,
+        :rails_env => new_resource.environment_name,
+        :smells_like_rack => ::File.exists?(::File.join(new_resource.path, "current", "config.ru"))
+      )
+      run_restart false
+    end
   end
 
 end

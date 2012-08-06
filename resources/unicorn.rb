@@ -25,6 +25,7 @@ default_worker_processes = [ node['cpu']['total'].to_i * 4, 8 ].min rescue 4
 attribute :preload_app, :kind_of => [TrueClass, FalseClass], :default => false
 attribute :worker_processes, :kind_of => Integer, :default => default_worker_processes
 attribute :before_fork, :kind_of => String, :default => 'sleep 1'
+attribute :after_fork, :kind_of => String, :default => ''
 attribute :port, :kind_of => String, :default => "8080"
 attribute :worker_timeout, :kind_of => Integer, :default => 60
 attribute :bundler, :kind_of => [TrueClass, FalseClass, NilClass], :default => nil
