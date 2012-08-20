@@ -77,10 +77,18 @@ action :before_migrate do
       # Check for a Gemfile.lock
       bundler_deployment = ::File.exists?(::File.join(new_resource.release_path, "Gemfile.lock"))
     end
-    execute "bundle install --path=vendor/bundle #{bundler_deployment ? "--deployment " : ""}--without #{common_groups}" do
-      cwd new_resource.release_path
-      user new_resource.owner
-      environment new_resource.environment
+    bash 'XXXXXX bundle install' do
+      cwd "/root"
+      user "root"
+      #environment new_resource.environment
+      # flags '-l -c'
+      code <<-EOH
+      echo 'trying to run bundle install & sleep '
+      # su - ecomm -c bash -l 'cd /home/ecomm/ && bundle install --path=vendor/bundle #{bundler_deployment ? "--deployment " : ""}--without #{common_groups} && rbenv rehash'
+       su - ecomm -c 'bash -l -c "cd /home/ecomm/current && bundle install --path=vendor/bundle --deployment --without development test cucumber staging production && rbenv rehash" '
+       touch /tmp/algo
+      EOH
+     #only_if { ::File.exist?("/home/ecomm/current") }
     end
   else
     # chef runs before_migrate, then symlink_before_migrate symlinks, then migrations,
