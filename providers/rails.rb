@@ -97,7 +97,7 @@ action :before_migrate do
     #
     # maybe worth doing run_symlinks_before_migrate before before_migrate callbacks,
     # or an add'l callback.
-    execute "(ln -s ../../../shared/database.yml config/database.yml && rake gems:install); rm config/database.yml" do
+    execute "(ln -s ../../../shared/config/database.yml config/database.yml && rake gems:install); rm config/database.yml" do
       cwd new_resource.release_path
       user new_resource.owner
       environment new_resource.environment
@@ -168,7 +168,7 @@ end
 def create_database_yml
   host = new_resource.find_database_server(new_resource.database_master_role)
 
-  template "#{new_resource.path}/shared/database.yml" do
+  template "#{new_resource.path}/shared/config/database.yml" do
     source new_resource.database_template || "database.yml.erb"
     cookbook new_resource.database_template ? new_resource.cookbook_name : "application_ruby"
     owner new_resource.owner
