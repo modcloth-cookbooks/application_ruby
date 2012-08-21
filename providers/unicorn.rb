@@ -68,7 +68,7 @@ action :before_restart do
   case node['platform']
   when "smartos"
     app_path      = ::File.join(new_resource.path, 'current')
-    unicorn_path  = "/opt/local/bin:/opt/local/sbin:/usr/bin:/usr/sbin"
+    unicorn_path  = ["/opt/local/bin:/opt/local/sbin:/usr/bin:/usr/sbin"] + new_resource.path_extensions
 
     smf "unicorn-#{new_resource.name}" do
       credentials_user new_resource.owner
@@ -81,7 +81,7 @@ action :before_restart do
       restart_timeout 120
       environment(
         "HOME" => "/home/#{new_resource.owner}",
-        "PATH" => unicorn_path
+        "PATH" => unicorn_path.join(':')
       )
 
       # If you get into a case where the unicorn master is frequently reaping
