@@ -68,7 +68,7 @@ action :before_migrate do
     link "#{new_resource.release_path}/vendor/bundle" do
       to "#{new_resource.path}/shared/vendor_bundle"
     end
-    common_groups = %w{development test cucumber staging}
+    common_groups = %w{development test cucumber staging production}
     common_groups += new_resource.bundler_without_groups
     common_groups -= [new_resource.environment_name]
     common_groups = common_groups.join(' ')
@@ -77,15 +77,11 @@ action :before_migrate do
       # Check for a Gemfile.lock
       bundler_deployment = ::File.exists?(::File.join(new_resource.release_path, "Gemfile.lock"))
     end
-    execute %Q{su - #{new_resource.owner} -c 'bash -l -c "cd #{new_resource.release_path} && bundle install --path=vendor/bundle --deployment --without development test cucumber staging && rbenv rehash" '} do
+    execute "bundle install --path=vendor/bundle #{bundler_deployment ? "--deployment " : ""}--without #{common_groups}" do
       cwd new_resource.release_path
+      user new_resource.owner
       environment new_resource.environment
     end
-    # execute "ruby bundle install --path=vendor/bundle #{bundler_deployment ? "--deployment " : ""}--without #{common_groups}" do
-    #      cwd new_resource.release_path
-    #      user new_resource.owner
-    #      environment new_resource.environment
-    #    end
   else
     # chef runs before_migrate, then symlink_before_migrate symlinks, then migrations,
     # yet our before_migrate needs database.yml to exist (and must complete before
