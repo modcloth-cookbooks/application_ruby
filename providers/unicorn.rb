@@ -34,7 +34,7 @@ action :before_compile do
   if !new_resource.restart_command
     case node['platform']
     when "smartos"
-      new_resource.restart_command "svcadm restart unicorn-#{new_resource.name}"
+      new_resource.restart_command "svcadm restart unicorn"
     else
       new_resource.restart_command "/etc/init.d/#{new_resource.name} hup"
     end
@@ -71,7 +71,7 @@ action :before_restart do
     app_path      = ::File.join(new_resource.path, 'current')
     unicorn_path  = new_resource.path_extensions + ["/opt/local/bin:/opt/local/sbin:/usr/bin:/usr/sbin"]
 
-    smf "unicorn-#{new_resource.name}" do
+    smf "unicorn" do
       credentials_user new_resource.owner
 
       start_command "bundle exec unicorn -c /etc/unicorn/#{new_resource.name}.rb -E %{config/rails_env} -D"
