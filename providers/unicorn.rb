@@ -70,11 +70,12 @@ action :before_restart do
   when "smartos"
     app_path      = ::File.join(new_resource.path, 'current')
     unicorn_path  = new_resource.path_extensions + ["/opt/local/bin:/opt/local/sbin:/usr/bin:/usr/sbin"]
+    unicorn_executable = new_resource.unicorn_rails ? "unicorn_rails" : "unicorn"
 
     smf "unicorn" do
       credentials_user new_resource.owner
 
-      start_command "bundle exec unicorn -c /etc/unicorn/#{new_resource.name}.rb -E %{config/rails_env} -D"
+      start_command "bundle exec #{unicorn_executable} -c /etc/unicorn/#{new_resource.name}.rb -E %{config/rails_env} -D"
       start_timeout 90
       stop_command ":kill"
       stop_timeout 30

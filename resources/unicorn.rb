@@ -31,6 +31,7 @@ attribute :worker_timeout, :kind_of => Integer, :default => 60
 attribute :stderr_path, :kind_of => String, :default => nil
 attribute :bundler, :kind_of => [TrueClass, FalseClass, NilClass], :default => nil
 attribute :path_extensions, :kind_of => [Array], :default => []
+attribute :unicorn_rails, :kind_of => [TrueClass, FalseClass], :default => false
 
 def options(*args, &block)
   @options ||= Mash[:tcp_nodelay => true, :backlog => 100]
