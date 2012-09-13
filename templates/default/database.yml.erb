@@ -5,4 +5,7 @@
   username: <%= @database['username'] %>
   password: <%= @database['password'] %>
   encoding: <%= @database.has_key?('encoding') ? @database['encoding'] : 'utf8' %>
+<% if @database.has_key?('pool') %>
+  pool: <%= @database['pool'] %>
+<% end %>
   reconnect: true
