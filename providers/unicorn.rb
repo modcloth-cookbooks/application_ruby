@@ -80,10 +80,11 @@ action :before_restart do
       stop_timeout 30
       restart_command ":kill -SIGUSR2"
       restart_timeout 120
-      environment(
+  
+      environment({
         "HOME" => "/home/#{new_resource.owner}",
         "PATH" => unicorn_path.join(':')
-      )
+      }.merge(new_resource.environment))
 
       # If you get into a case where the unicorn master is frequently reaping
       # workers, SMF may notice and put the service into maintenance mode.
