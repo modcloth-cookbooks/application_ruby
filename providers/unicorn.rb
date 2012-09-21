@@ -64,7 +64,7 @@ action :before_restart do
     before_fork new_resource.before_fork
     after_fork new_resource.after_fork
   end
-
+  
   case node['platform']
   when "smartos"
     app_path      = ::File.join(new_resource.path, 'current')
@@ -72,7 +72,7 @@ action :before_restart do
 
     smf "unicorn-#{new_resource.name}" do
       credentials_user new_resource.owner
-
+      
       start_command "bundle exec unicorn -c /etc/unicorn/#{new_resource.name}.rb -E %{config/rails_env} -D"
       start_timeout 90
       stop_command ":kill"

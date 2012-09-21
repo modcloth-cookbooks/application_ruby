@@ -77,7 +77,7 @@ action :before_migrate do
       # Check for a Gemfile.lock
       bundler_deployment = ::File.exists?(::File.join(new_resource.release_path, "Gemfile.lock"))
     end
-    bash 'XXXXXX bundle install' do
+    bash 'bundle install' do
       cwd "/root"
       user "root"
       #environment new_resource.environment
