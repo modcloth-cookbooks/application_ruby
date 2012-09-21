@@ -138,7 +138,6 @@ end
 action :after_restart do
 end
 
-
 protected
 
 def install_gems
